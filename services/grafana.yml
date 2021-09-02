@@ -1,0 +1,17 @@
+---
+services:
+  grafana:
+    image: "grafana/grafana:${STACK_GRAFANA_VERSION:-8.1.2}"
+    restart: always
+    environment:
+      GF_SERVER_ROOT_URL: "/svc/grafana/"
+      GF_SERVE_FROM_SUB_PATH: "true"
+      GF_SECURITY_ADMIN_USER: "${STACK_GRAFANA_USERNAME:?}"
+      GF_SECURITY_ADMIN_PASSWORD: "${STACK_GRAFANA_PASSWORD:?}"
+    volumes:
+      - "grafana:/var/lib/grafana"
+      - "${STACK_DATA_DIR:?}:${STACK_CONTAINER_DATA_DIR:?}"
+
+volumes:
+  grafana:
+    driver: local

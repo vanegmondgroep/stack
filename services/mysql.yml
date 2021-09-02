@@ -1,0 +1,22 @@
+---
+services:
+  mysql:
+    image: "docker.io/bitnami/mariadb:${STACK_MYSQL_VERSION:-10.5}"
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${STACK_MYSQL_ROOT_PASSWORD:?}
+      MARIADB_DATABASE: ${STACK_MYSQL_DATABASE:?}
+      MARIADB_USER: ${STACK_MYSQL_USERNAME:?}
+      MARIADB_PASSWORD: ${STACK_MYSQL_PASSWORD:?}
+    volumes:
+      - "mysql:/bitnami/mariadb"
+      - "${STACK_DATA_DIR:?}:${STACK_CONTAINER_DATA_DIR:?}"
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
+volumes:
+  mysql:
+    driver: local

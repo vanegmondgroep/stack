@@ -1,0 +1,143 @@
+#!/bin/bash
+
+function log {
+    DATETIME=$(date '+%Y/%m/%d %H:%M:%S');
+    echo -e "[$STACK_NAME][$DATETIME] $1"
+}
+
+function error {
+    log "\033[0;31m$1\033[0m"
+    exit 1
+}
+
+function cleanup {
+    THRESHOLD=$(date -d "$3 days ago" +%s)
+    find $1 -maxdepth 1 -type f -print0  | while IFS= read -d '' -r file; do
+        if [[ "$(basename "$file")" =~ ^$2_[0-9]{10}.csv$ ]]; then
+            [ "$(basename "${file#*_}" .csv)" -le "$THRESHOLD" ] && rm -v -- "$file"
+        fi
+    done
+}
+
+function dockerCompose {
+    STACK_COMPOSE_FILES="-f $STACK_WORKDIR/docker-compose.yml"
+
+    if [ "$STACK_GRAFANA_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/grafana.yml"
+    fi
+
+    if [ "$STACK_INFLUXDB_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/influxdb.yml"
+    fi
+
+    if [ "$STACK_MAILHOG_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/mailhog.yml"
+    fi
+
+    if [ "$STACK_MYSQL_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/mysql.yml"
+    fi
+
+    if [ "$STACK_NODERED_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/node-red.yml"
+    fi
+
+    if [ "$STACK_REDIS_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/redis.yml"
+    fi
+
+    if [ "$STACK_PHPMYADMIN_ENABLED" = true ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/phpmyadmin.yml"
+    fi
+
+    if [ -f $STACK_DATA_DIR/stack.yml ]; then
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_DATA_DIR/stack.yml"
+    fi
+
+    docker-compose -p $STACK_PROJECT_NAME --env-file $STACK_ENV_FILE --project-directory $STACK_WORKDIR $STACK_COMPOSE_FILES "${@:1}"
+}
+
+function init {
+    if [ ! -d $STACK_DATA_DIR ]; then
+        mkdir $STACK_DATA_DIR
+    fi
+
+    if [ ! -f $STACK_ENV_FILE ]; then 
+        cp "$STACK_STUBS_DIR/.env.stub" "$STACK_PROJECT_DIR/.env"
+    fi
+
+    if [ ! -f $STACK_DATA_DIR/.gitignore ]; then 
+        cp "$STACK_STUBS_DIR/.gitignore.stub" "$STACK_DATA_DIR/.gitignore"
+    fi
+
+    if [ ! -f $STACK_DATA_DIR/runtime.yml ]; then 
+        cp "$STACK_STUBS_DIR/runtime.yml" "$STACK_DATA_DIR/runtime.yml"
+    fi
+
+    if [ ! -f $STACK_DATA_DIR/stack.yml ]; then 
+        cp "$STACK_STUBS_DIR/stack.yml" "$STACK_DATA_DIR/stack.yml"
+    fi
+
+    log "Initialized stack, don't forget to update your .env before starting services!"
+    
+    exit 0
+}
+
+function backup {
+    BACKUP_FILE=stack-backup_`date +%s`.tar.gz
+    BACKUP_LOCAL_DIR=$STACK_DATA_DIR/backups 
+    BACKUP_LOCAL_DATA_DIR=$BACKUP_LOCAL_DIR/tmp
+    BACKUP_CONTAINER_DIR=$STACK_CONTAINER_DATA_DIR/backups
+    BACKUP_CONTAINER_DATA_DIR=$BACKUP_CONTAINER_DIR/tmp
+
+    log "Cleanup old backup data"
+    dockerCompose exec -T -u root runtime bash -c "rm -rf $BACKUP_CONTAINER_DATA_DIR"
+
+    log "Initialize backup data folders"
+    mkdir -p $BACKUP_LOCAL_DATA_DIR
+    
+    if [ "$STACK_INFLUXDB_ENABLED" = true ]; then
+        log "Backup InfluxDB data"
+        mkdir -p $BACKUP_LOCAL_DATA_DIR/influxdb
+        dockerCompose exec -T -u root influxdb bash -c "influx backup -t '$STACK_INFLUXDB_ADMIN_TOKEN' '$BACKUP_CONTAINER_DATA_DIR/influxdb'" || return 1
+    fi
+
+    if [ "$STACK_NODERED_ENABLED" = true ]; then
+        log "Backup Node-RED flows"
+        mkdir -p $BACKUP_LOCAL_DATA_DIR/node-red  
+        dockerCompose exec -T -u root node-red bash -c "cp /data/flows.json $BACKUP_CONTAINER_DATA_DIR/node-red/flows.json" || return 1
+    fi
+
+    if [ "$STACK_GRAFANA_ENABLED" = true ]; then
+        log "Backup Grafana database"
+        mkdir -p $BACKUP_LOCAL_DATA_DIR/grafana
+        dockerCompose exec -T -u root grafana bash -c "cp -R /var/lib/grafana/* $BACKUP_CONTAINER_DATA_DIR/grafana" || return 1
+    fi 
+
+    if [ "$STACK_MYSQL_ENABLED" = true ]; then
+        log "Dump MySQL database"
+        mkdir -p $BACKUP_LOCAL_DATA_DIR/mysql
+        dockerCompose exec -T -u root mysql bash -c "mysqldump -uroot -p$STACK_MYSQL_ROOT_PASSWORD -hmysql --all-databases > $BACKUP_CONTAINER_DATA_DIR/mysql/dump.sql" || return 1
+    fi
+    
+    log "Create backup archive $BACKUP_FILE"
+    dockerCompose exec -T -u root runtime bash -c "tar --exclude='.stack/data/backups' -zcf $BACKUP_CONTAINER_DIR/$BACKUP_FILE -C $BACKUP_CONTAINER_DATA_DIR . /home/runtime/public" || return 1
+
+    log "Fix permissions for $BACKUP_FILE"
+    dockerCompose exec -T -u root runtime bash -c "chown -R $STACK_UID:$STACK_UID $BACKUP_CONTAINER_DIR" || return 1
+
+    if [ ! -z $STACK_BACKUP_DIR ]; then 
+        log "Move file to $STACK_BACKUP_DIR/$BACKUP_FILE"
+        mv $BACKUP_LOCAL_DIR/$BACKUP_FILE $STACK_BACKUP_DIR/$BACKUP_FILE
+
+        log "Cleanup old backups in $STACK_BACKUP_DIR"
+        cleanup $STACK_BACKUP_DIR stack-backup $STACK_BACKUP_CLEANUP_DAYS
+    else 
+        log "Cleanup old backups in $BACKUP_LOCAL_DIR"
+        cleanup $BACKUP_LOCAL_DIR stack-backup $STACK_BACKUP_CLEANUP_DAYS
+    fi
+
+    rm -rf $BACKUP_LOCAL_DATA_DIR
+
+    return 0
+}

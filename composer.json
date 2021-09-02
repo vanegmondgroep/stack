@@ -1,0 +1,10 @@
+{
+    "name": "sitepilot/stack",
+    "description": "A light-weight command-line interface for running web applications with Docker.",
+    "type": "project",
+    "license": "MIT",
+    "require": {},
+    "bin": [
+        "bin/stack"
+    ]
+}

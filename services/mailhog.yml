@@ -1,0 +1,5 @@
+---
+services:
+  mailhog:
+    image: "mailhog/mailhog:${STACK_MAILHOG_VERSION:-latest}"
+    restart: always

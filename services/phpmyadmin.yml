@@ -1,0 +1,9 @@
+---
+services:
+  phpmyadmin:
+    image: "docker.io/bitnami/phpmyadmin:${PMA_VERSION:-5}"
+    restart: always
+    environment:
+      DATABASE_HOST: mysql
+      PHP_UPLOAD_MAX_FILESIZE: 2G
+      PHPMYADMIN_ABSOLUTE_URI: "/svc/phpmyadmin/"

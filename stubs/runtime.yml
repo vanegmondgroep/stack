@@ -1,0 +1,6 @@
+---
+docRoot: "/"
+
+ssl:
+  key: ""
+  cert: ""
