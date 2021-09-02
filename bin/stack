@@ -20,8 +20,11 @@ source $STACK_INC_DIR/functions
 if [ ! -f $STACK_ENV_FILE ] && [ "$1" != "init" ]; then
     error "Could not locate .env file ($STACK_ENV_FILE)"
 elif [ -f $STACK_ENV_FILE ]; then 
-    source $STACK_ENV_FILE && source $STACK_INC_DIR/defaults && source $STACK_ENV_FILE
+    source $STACK_INC_DIR/config 
+    source $STACK_ENV_FILE
 fi
+
+source $STACK_INC_DIR/defaults 
 
 case $1 in
     init)
