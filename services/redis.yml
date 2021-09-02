@@ -1,7 +1,7 @@
 ---
 services:
   redis:
-    image: "docker.io/bitnami/redis:${REDIS_VERSION:-6.2}"
+    image: "${STACK_REDIS_IMAGE:?}:${STACK_REDIS_TAG:?}"
     restart: always
     environment:
       ALLOW_EMPTY_PASSWORD: "yes"

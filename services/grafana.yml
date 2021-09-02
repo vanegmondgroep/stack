@@ -1,7 +1,7 @@
 ---
 services:
   grafana:
-    image: "grafana/grafana:${STACK_GRAFANA_VERSION:-8.1.2}"
+    image: "${STACK_GRAFANA_IMAGE:?}:${STACK_GRAFANA_TAG:?}"
     restart: always
     environment:
       GF_SERVER_ROOT_URL: "/svc/grafana/"

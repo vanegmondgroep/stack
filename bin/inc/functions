@@ -58,12 +58,18 @@ function dockerCompose {
 }
 
 function init {
+    PASSWORD=$(openssl rand -base64 12)
+
     if [ ! -d $STACK_DATA_DIR ]; then
         mkdir $STACK_DATA_DIR
     fi
 
     if [ ! -f $STACK_ENV_FILE ]; then 
-        cp "$STACK_STUBS_DIR/.env.stub" "$STACK_PROJECT_DIR/.env"
+        touch $STACK_ENV_FILE
+        echo "STACK_ADMIN_PASSWORD='${PASSWORD}'" >> $STACK_ENV_FILE
+    else 
+        source $STACK_ENV_FILE
+        [ ! -n "${STACK_ADMIN_PASSWORD:-}" ] && echo -e "\nSTACK_ADMIN_PASSWORD=\"${PASSWORD}\"" >> $STACK_ENV_FILE
     fi
 
     if [ ! -f $STACK_DATA_DIR/.gitignore ]; then 

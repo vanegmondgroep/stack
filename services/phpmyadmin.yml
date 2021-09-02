@@ -1,7 +1,7 @@
 ---
 services:
   phpmyadmin:
-    image: "docker.io/bitnami/phpmyadmin:${PMA_VERSION:-5}"
+    image: "${STACK_PHPMYADMIN_IMAGE:?}:${STACK_PHPMYADMIN_TAG:?}"
     restart: always
     environment:
       DATABASE_HOST: mysql
