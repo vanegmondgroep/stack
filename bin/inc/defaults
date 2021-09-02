@@ -3,7 +3,7 @@
 # General
 export STACK_NAME="STACK"
 export STACK_ADMIN_USERNAME="admin"
-export STACK_ADMIN_PASSWORD=""
+export STACK_ADMIN_PASSWORD=${STACK_ADMIN_PASSWORD}
 export STACK_ADMIN_EMAIL="admin@stack.local"
 export STACK_ADMIN_ORG="Stack"
 
