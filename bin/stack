@@ -40,5 +40,11 @@ case $1 in
         backup || error "Backup failed, please check the configuration."
         ;;
     *)
-        dockerCompose exec runtime "$@"
+        CMD="exec"
+
+        if [ ! -t 1 ]; then
+            CMD="$CMD -T"
+        fi
+
+        dockerCompose $CMD runtime "$@"
 esac
