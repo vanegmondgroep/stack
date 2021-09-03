@@ -23,6 +23,15 @@ function success {
     return 0
 }
 
+function setEnv {
+    touch $STACK_ENV_FILE
+    grep -q "^$1=" $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
+}
+
+function updateEnv {
+    grep -q "^$1=" $STACK_ENV_FILE && sed "s/^$1=.*/$1=$2/" -i $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
+}
+
 function cleanup {
     THRESHOLD=$(date -d "$3 days ago" +%s)
     find $1 -maxdepth 1 -type f -print0  | while IFS= read -d '' -r file; do
@@ -96,9 +105,7 @@ function init {
         cp "$STACK_STUBS_DIR/stack.yml" "$STACK_DATA_DIR/stack.yml"
     fi
 
-    log "Initialized stack, don't forget to update your .env before starting services!"
-    
-    exit 0
+    success "Initialized stack, don't forget to update your .env before starting services!"
 }
 
 function enable {
@@ -129,16 +136,7 @@ function enable {
             ;;
     esac
 
-    log "Enabled service: $1"
-}
-
-function setEnv {
-    touch $STACK_ENV_FILE
-    grep -q "^$1=" $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
-}
-
-function updateEnv {
-    grep -q "^$1=" $STACK_ENV_FILE && sed "s/^$1=.*/$1=$2/" -i $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
+    success "Enabled service: $1"
 }
 
 function backup {
