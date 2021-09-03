@@ -16,8 +16,8 @@ export STACK_BACKUP_RETRY_SECONDS=10
 export STACK_BACKUP_MAX_TRIES=3
 
 # Runtime
-export STACK_RUNTIME_TAG="1.0.0"
-export STACK_RUNTIME_IMAGE="ghcr.io/sitepilot/runtime"
+export STACK_RUNTIME_TAG="1.0.2"
+export STACK_RUNTIME_IMAGE="ghcr.io/vanegmondgroep/runtime"
 
 # MySQL
 export STACK_MYSQL_ENABLED=false
