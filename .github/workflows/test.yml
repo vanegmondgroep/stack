@@ -39,5 +39,8 @@ jobs:
       - name: Test proxied command
         run: ./bin/stack php --version
 
+      - name: Test backup command
+        run: ./bin/stack backup
+
       - name: Test down command
         run: ./bin/stack down --volumes
