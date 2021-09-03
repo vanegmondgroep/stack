@@ -44,3 +44,13 @@ jobs:
 
       - name: Test down command
         run: ./bin/stack down --volumes
+
+      - name: Test disable command
+        run: |
+          ./bin/stack disable grafana
+          ./bin/stack disable influxdb
+          ./bin/stack disable mailhog
+          ./bin/stack disable mysql
+          ./bin/stack disable node-red
+          ./bin/stack disable phpmyadmin
+          ./bin/stack disable redis
