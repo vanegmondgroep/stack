@@ -66,6 +66,9 @@ function init {
         mkdir $STACK_DATA_DIR
     fi
 
+    setEnv STACK_HTTP_PORT 80
+    setEnv STACK_HTTPS_PORT 443
+    setEnv STACK_ADMIN_USERNAME "\"admin\""
     setEnv STACK_ADMIN_PASSWORD "\"${PASSWORD}\""
 
     if [ ! -f $STACK_DATA_DIR/.gitignore ]; then 
