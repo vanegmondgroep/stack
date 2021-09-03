@@ -1,5 +1,5 @@
 {
-    "name": "sitepilot/stack",
+    "name": "vanegmondgroep/stack",
     "description": "A light-weight command-line interface for running web applications with Docker.",
     "type": "project",
     "license": "MIT",
