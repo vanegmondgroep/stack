@@ -19,6 +19,11 @@ services:
       - "${STACK_DATA_DIR:?}:${STACK_CONTAINER_DATA_DIR:?}"
       - "${STACK_DATA_DIR:?}/runtime.yml:/opt/runtime/config/custom.yml:ro"
       - "${STACK_WORKDIR:?}/runtime.yml:/opt/runtime/config/runtime.yml:ro"
+    healthcheck:
+      test: ["CMD", "curl", "-sI", "http://127.0.0.1/-/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
 
 volumes:
   sip:

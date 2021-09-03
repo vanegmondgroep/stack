@@ -15,6 +15,11 @@ services:
     volumes:
       - "influxdb:/var/lib/influxdb2"
       - "${STACK_DATA_DIR:?}:${STACK_CONTAINER_DATA_DIR:?}"
+    healthcheck:
+      test: ["CMD", "curl", "-sI", "http://127.0.0.1:8086/ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
 
 volumes:
   influxdb:
