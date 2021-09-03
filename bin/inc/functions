@@ -66,13 +66,7 @@ function init {
         mkdir $STACK_DATA_DIR
     fi
 
-    if [ ! -f $STACK_ENV_FILE ]; then 
-        touch $STACK_ENV_FILE
-        echo "STACK_ADMIN_PASSWORD='${PASSWORD}'" >> $STACK_ENV_FILE
-    else 
-        source $STACK_ENV_FILE
-        [ ! -n "${STACK_ADMIN_PASSWORD:-}" ] && echo -e "\nSTACK_ADMIN_PASSWORD=\"${PASSWORD}\"" >> $STACK_ENV_FILE
-    fi
+    setEnv STACK_ADMIN_PASSWORD "\"${PASSWORD}\""
 
     if [ ! -f $STACK_DATA_DIR/.gitignore ]; then 
         cp "$STACK_STUBS_DIR/.gitignore.stub" "$STACK_DATA_DIR/.gitignore"
@@ -122,8 +116,13 @@ function enable {
     log "Enabled service: $1"
 }
 
+function setEnv {
+    touch $STACK_ENV_FILE
+    grep -q "^$1=" $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
+}
+
 function updateEnv {
-    grep -q "^$1=" $STACK_ENV_FILE && sed "s/^$1=.*/$1=$2/" -i $STACK_ENV_FILE || sed "$ a\\$1=$2" -i $STACK_ENV_FILE
+    grep -q "^$1=" $STACK_ENV_FILE && sed "s/^$1=.*/$1=$2/" -i $STACK_ENV_FILE || echo "$1=$2" | tee -a $STACK_ENV_FILE
 }
 
 function backup {
