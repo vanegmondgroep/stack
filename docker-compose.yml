@@ -3,7 +3,14 @@ version: "3"
 
 services:
   runtime:
-    image: ${STACK_RUNTIME_IMAGE:?}:${STACK_RUNTIME_TAG}
+    image: ${STACK_RUNTIME_IMAGE:?}:${STACK_RUNTIME_TAG}-stack
+    build:
+      context: ${STACK_WORKDIR}/docker/runtime
+      dockerfile: Dockerfile
+      args:
+        STACK_UID: ${STACK_UID:?}
+        STACK_RUNTIME_IMAGE: ${STACK_RUNTIME_IMAGE:?}
+        STACK_RUNTIME_TAG: ${STACK_RUNTIME_TAG:?}
     restart: always
     ports:
       - "${STACK_HTTP_PORT:?}:80"
