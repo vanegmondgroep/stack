@@ -139,6 +139,37 @@ function enable {
     success "Enabled service: $1"
 }
 
+function disable {
+    case $1 in
+        "mysql")
+            updateEnv "STACK_MYSQL_ENABLED" false
+            ;;
+        "phpmyadmin")
+            updateEnv "STACK_PHPMYADMIN_ENABLED" false
+            ;;
+        "influxdb")
+            updateEnv "STACK_INFLUXDB_ENABLED" false
+            ;;
+        "grafana")
+            updateEnv "STACK_GRAFANA_ENABLED" false
+            ;;
+        "node-red")
+            updateEnv "STACK_NODERED_ENABLED" false
+            ;;
+        "redis")
+            updateEnv "STACK_REDIS_ENABLED" false
+            ;;
+        "mailhog")
+            updateEnv "STACK_MAILHOG_ENABLED" false
+            ;;
+        *)
+            error "Unknown service: $1"
+            ;;
+    esac
+
+    success "Disabled service: $1"
+}
+
 function backup {
     BACKUP_FILE=stack-backup_`date +%s`.tar.gz
     BACKUP_LOCAL_DIR=$STACK_DATA_DIR/backups 
