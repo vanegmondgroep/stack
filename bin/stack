@@ -24,12 +24,12 @@ case $1 in
     up)
         log "Starting containers..."
         dockerCompose up "${@:2}" || error "Could not start all containers."
-        log "Containers started!"
+        success "Containers started!"
         ;;
     down)
         log "Stopping containers..."
         dockerCompose down --remove-orphans "${@:2}" || error "Could not stop all containers."
-        log "Containers stopped!"
+        success "Containers stopped!"
         ;;
     logs)
         dockerCompose logs --tail 25 --follow "${@:2}"
@@ -41,7 +41,17 @@ case $1 in
         dockerCompose "${@:2}"
         ;;    
     backup)
-        backup || error "Backup failed, please check the configuration."
+        COUNT=${2:-0}
+        if [ "$COUNT" -gt 0 ] && [ "$COUNT" -lt "$STACK_BACKUP_MAX_TRIES" ]; then
+            logError "Backup attempt $COUNT failed, retrying in $STACK_BACKUP_RETRY_SECONDS seconds..."
+            sleep $STACK_BACKUP_RETRY_SECONDS
+        elif [ "$COUNT" -ge "$STACK_BACKUP_MAX_TRIES" ]; then 
+            error "Backup attempt $COUNT failed, please check the configuration."
+        fi
+
+        COUNT=$((COUNT+=1))
+
+        backup || $STACK_WORKDIR/bin/stack backup $COUNT
         ;;
     enable)
         enable "${@:2}"
