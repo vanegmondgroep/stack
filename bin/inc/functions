@@ -20,34 +20,34 @@ function cleanup {
 }
 
 function dockerCompose {
-    STACK_COMPOSE_FILES="-f $STACK_WORKDIR/docker-compose.yml"
+    STACK_COMPOSE_FILES="-f $STACK_SERVICES_DIR/runtime.yml"
 
     if [ "$STACK_GRAFANA_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/grafana.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/grafana.yml"
     fi
 
     if [ "$STACK_INFLUXDB_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/influxdb.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/influxdb.yml"
     fi
 
     if [ "$STACK_MAILHOG_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/mailhog.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/mailhog.yml"
     fi
 
     if [ "$STACK_MYSQL_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/mysql.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/mysql.yml"
     fi
 
     if [ "$STACK_NODERED_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/node-red.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/node-red.yml"
     fi
 
     if [ "$STACK_REDIS_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/redis.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/redis.yml"
     fi
 
     if [ "$STACK_PHPMYADMIN_ENABLED" = true ]; then
-        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_WORKDIR/services/phpmyadmin.yml"
+        STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_SERVICES_DIR/phpmyadmin.yml"
     fi
 
     if [ -f $STACK_DATA_DIR/stack.yml ]; then
