@@ -17,6 +17,16 @@ jobs:
       - name: Test init command
         run: ./bin/stack init
 
+      - name: Test enable command
+        run: |
+          ./bin/stack enable grafana
+          ./bin/stack enable influxdb
+          ./bin/stack enable mailhog
+          ./bin/stack enable mysql
+          ./bin/stack enable node-red
+          ./bin/stack enable phpmyadmin
+          ./bin/stack enable redis
+
       - name: Test up command
         run: ./bin/stack up -d
 

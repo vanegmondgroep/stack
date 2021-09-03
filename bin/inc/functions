@@ -54,7 +54,9 @@ function dockerCompose {
         STACK_COMPOSE_FILES="$STACK_COMPOSE_FILES -f $STACK_DATA_DIR/stack.yml"
     fi
 
-    docker-compose -p $STACK_PROJECT_NAME --env-file $STACK_ENV_FILE --project-directory $STACK_WORKDIR $STACK_COMPOSE_FILES "${@:1}"
+    docker-compose -p $STACK_PROJECT_NAME --env-file $STACK_ENV_FILE --project-directory $STACK_WORKDIR $STACK_COMPOSE_FILES "${@:1}" || return 1
+
+    return 0
 }
 
 function init {
@@ -87,6 +89,41 @@ function init {
     log "Initialized stack, don't forget to update your .env before starting services!"
     
     exit 0
+}
+
+function enable {
+    case $1 in
+        "mysql")
+            updateEnv "STACK_MYSQL_ENABLED" true
+            ;;
+        "phpmyadmin")
+            updateEnv "STACK_PHPMYADMIN_ENABLED" true
+            ;;
+        "influxdb")
+            updateEnv "STACK_INFLUXDB_ENABLED" true
+            ;;
+        "grafana")
+            updateEnv "STACK_GRAFANA_ENABLED" true
+            ;;
+        "node-red")
+            updateEnv "STACK_NODERED_ENABLED" true
+            ;;
+        "redis")
+            updateEnv "STACK_REDIS_ENABLED" true
+            ;;
+        "mailhog")
+            updateEnv "STACK_MAILHOG_ENABLED" true
+            ;;
+        *)
+            error "Unknown service: $1"
+            ;;
+    esac
+
+    log "Enabled service: $1"
+}
+
+function updateEnv {
+    grep -q "^$1=" $STACK_ENV_FILE && sed "s/^$1=.*/$1=$2/" -i $STACK_ENV_FILE || sed "$ a\\$1=$2" -i $STACK_ENV_FILE
 }
 
 function backup {

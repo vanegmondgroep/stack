@@ -22,10 +22,14 @@ case $1 in
         init
         ;;
     up)
-        dockerCompose up "${@:2}"
+        log "Starting containers..."
+        dockerCompose up "${@:2}" || error "Could not start all containers."
+        log "Containers started!"
         ;;
     down)
-        dockerCompose down --remove-orphans "${@:2}"
+        log "Stopping containers..."
+        dockerCompose down --remove-orphans "${@:2}" || error "Could not stop all containers."
+        log "Containers stopped!"
         ;;
     logs)
         dockerCompose logs --tail 25 --follow "${@:2}"
@@ -38,6 +42,9 @@ case $1 in
         ;;    
     backup)
         backup || error "Backup failed, please check the configuration."
+        ;;
+    enable)
+        enable "${@:2}"
         ;;
     *)
         CMD="exec"
